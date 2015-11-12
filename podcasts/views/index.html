@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    </head>
+    <body ng-app="myApp" ng-controller="PodcastController">
+        <div align="center">
+            <h1>Learn More From Experts Around The Web</h1>
+        </div>
+        <div align="center">
+            <input ng-model="Search" ng-keyup="Suggestions()"placeholder="Search For a Language" type="text"></input>
+            <button ng-click="Enter()">Search</button>
+        </div>
+        <div class="col-md-offset-5">
+            <div class="text-left">
+                <ul class="list-unstyled">
+                    <li ng-repeat="suggestions in suggestionsArray">{{suggestions.suggestion}}</li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <ul>
+                <li ng-repeat="podcasts in podcastArray"> <img ng-src="{{podcasts.art}}"/> <a href="{{podcasts.url}}" target="_blank"> {{podcasts.collectionName}} </a> </li>
+            </ul>
+        </div>
+        
+        
+    <script>
+    var myApp = angular.module('myApp', []);
+    
+    myApp.controller('PodcastController', function($scope, $http) {
+        
+        $scope.Suggestions = function () {
+            console.log("Keying Up: " + $scope.Search);
+            
+            var url = "suggestions/" + encodeURIComponent($scope.Search);
+            
+            $http({
+                method: "GET",
+                url: url
+                }).then(function successCallback(response) {
+                    console.log("success " + response.data);
+                   
+                    $scope.suggestionsArray = [];
+                  
+                    var items = response.data.length;
+                    for (var i=0; i < items; i++)
+                    {
+                        $scope.suggestionsArray.push({suggestion: response.data[i]});
+                    }
+                }, function errorCallback(response) {
+                    $scope.suggestionsArray = [];
+                });
+        }
+        
+        $scope.Enter = function () {
+            var search = $scope.Search.replace('+', '%2B')
+            search = search.replace(' ', '+')
+            search = search.replace('#', '%23')
+            var url = "search/" + search;
+            $http({
+                method: "GET",
+                url: url
+                }).then(function successCallback(response) {
+                    var casts = JSON.parse(response.data);
+       
+                    $scope.podcastArray = [];
+                    var items = casts.results.length;
+                    for (var i =0; i < items; i++)
+                    {
+                        $scope.podcastArray.push({collectionName: casts.results[i].collectionName, art: casts.results[i].artworkUrl100, url: casts.results[i].collectionViewUrl});
+                    }
+                }, function errorCallback(response) {
+                    console.log("error " + response);
+                });
+                
+                $scope.suggestionsArray = [];
+            
+        }
+    });
+        
+    </script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+    
+    </body>
+
+</html>
